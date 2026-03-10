@@ -1,0 +1,237 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>职场办公模板生成器 - 一键生成高效办公文档</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:"Microsoft YaHei",微软雅黑,system-ui,-apple-system}
+    body{background:#f5f7fa;padding:20px;max-width:700px;margin:0 auto}
+    .container{background:white;border-radius:12px;padding:30px;box-shadow:0 1px 10px rgba(0,0,0,0.08)}
+    h1{font-size:24px;color:#2d3748;margin-bottom:20px;text-align:center}
+    .desc{color:#718096;font-size:15px;margin-bottom:25px;text-align:center}
+    .form-group{margin-bottom:20px}
+    label{display:block;color:#4a5568;font-size:14px;margin-bottom:8px;font-weight:500}
+    select,textarea{width:100%;padding:12px 15px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;color:#2d3748;background:#fafafa}
+    select:focus,textarea:focus{outline:none;border-color:#4299e1;box-shadow:0 0 0 2px rgba(66,153,225,0.2)}
+    textarea{min-height:100px;resize:vertical}
+    .btn{width:100%;padding:14px;background:#4299e1;color:white;border:none;border-radius:8px;font-size:16px;font-weight:500;cursor:pointer;transition:background 0.2s}
+    .btn:hover{background:#3182ce}
+    .result-box{margin-top:30px;display:none}
+    .result-title{color:#4a5568;font-size:15px;margin-bottom:10px}
+    .result-content{background:#e8f4f8;padding:20px;border-radius:8px;white-space:pre-wrap;line-height:1.8;color:#2d3748;font-size:14px;min-height:150px}
+    .copy-btn{margin-top:15px;background:#38b2ac;color:white;border:none;padding:10px 15px;border-radius:6px;font-size:14px;cursor:pointer}
+    .copy-btn:hover{background:#319795}
+    .tip{margin-top:10px;font-size:12px;color:#a0aec0;text-align:center}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>职场办公模板生成器</h1>
+    <p class="desc">选择模板类型，一键生成可直接复制的办公文档</p>
+
+    <div class="form-group">
+      <label for="templateType">选择模板类型</label>
+      <select id="templateType">
+        <option value="weekly">工作周报</option>
+        <option value="summary">月度/年度总结</option>
+        <option value="meeting">会议纪要</option>
+        <option value="email">商务邮件</option>
+        <option value="leave">请假申请</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="customContent">自定义补充内容（比如：本周完成XX项目、总结核心成果）</label>
+      <textarea id="customContent" placeholder="例：1. 完成XX客户对接；2. 整理XX数据报表；3. 待办：下周推进XX任务..."></textarea>
+    </div>
+
+    <button class="btn" onclick="generateTemplate()">一键生成模板</button>
+
+    <div class="result-box" id="resultBox">
+      <div class="result-title">生成的模板（点击复制）</div>
+      <div class="result-content" id="resultContent"></div>
+      <button class="copy-btn" onclick="copyContent()">复制全部内容</button>
+      <p class="tip">模板可直接粘贴到Word/钉钉/企业微信使用</p>
+    </div>
+  </div>
+
+  <script>
+    // 模板库
+    const templates = {
+      weekly: [
+`# 工作周报
+汇报周期：${new Date().getFullYear()}年${new Date().getMonth()+1}月第${Math.ceil(new Date().getDate()/7)}周
+汇报人：
+——————
+一、本周完成工作
+${customContent}
+
+二、遇到的问题与解决方案
+1. 
+2. 
+
+三、下周工作计划
+1. 
+2. 
+
+四、需要协调的资源
+1. 
+2. 
+`,
+`# 简洁版工作周报
+【本周总结】
+${customContent}
+
+【下周计划】
+1. 
+2. 
+
+【问题与建议】
+- 
+`],
+      summary: [
+`# 月度工作总结
+总结月份：${new Date().getFullYear()}年${new Date().getMonth()+1}月
+总结人：
+——————
+一、本月核心成果
+${customContent}
+
+二、工作亮点与不足
+▌亮点：
+1. 
+2. 
+
+▌不足：
+1. 
+2. 
+
+三、下月工作规划
+1. 重点推进：
+2. 能力提升：
+3. 其他事项：
+`,
+`# 年度工作总结
+年份：${new Date().getFullYear()}年
+部门/岗位：
+——————
+一、年度工作完成情况
+${customContent}
+
+二、核心业绩与数据
+1. 
+2. 
+
+三、个人成长与反思
+1. 收获：
+2. 待改进：
+
+四、下一年度规划
+1. 工作目标：
+2. 行动计划：
+`],
+      meeting: [
+`# 会议纪要
+会议主题：
+会议时间：${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()}日
+会议地点：
+参会人员：
+记录人：
+——————
+一、会议主要内容
+${customContent}
+
+二、决议事项
+1. 
+2. 
+
+三、行动项（责任人+截止时间）
+1. 责任人： 截止时间： 事项：
+2. 责任人： 截止时间： 事项：
+
+四、待跟进事项
+1. 
+2. 
+`],
+      email: [
+`主题：${customContent.split('，')[0] || '工作沟通'}
+尊敬的XX：
+
+您好！
+
+${customContent}
+
+如有疑问，请随时沟通。
+
+此致
+敬礼！
+${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()}日
+`,
+`主题：关于${customContent.split('，')[0] || 'XX事项'}的沟通
+XX您好：
+
+为推进${customContent}，现向您同步相关信息如下：
+
+1. 
+2. 
+
+请您查阅，期待您的反馈。
+
+感谢！
+
+XX
+${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()}日
+`],
+      leave: [
+`# 请假申请
+尊敬的领导：
+
+您好！因${customContent || '个人原因'}，现申请请假。
+请假时间：${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()}日 —— ${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()+1}日
+请假期间，手头工作已交接给XX（联系方式：XXX），紧急事项可通过XX方式联系我。
+
+恳请批准！
+
+申请人：
+申请日期：${new Date().getFullYear()}年${new Date().getMonth()+1}月${new Date().getDate()}日
+`]
+    };
+
+    // 生成模板
+    function generateTemplate() {
+      const type = document.getElementById('templateType').value;
+      const customContent = document.getElementById('customContent').value || '无特殊补充内容';
+      const resultBox = document.getElementById('resultBox');
+      const resultContent = document.getElementById('resultContent');
+
+      // 替换模板中的自定义内容
+      const templateList = templates[type].map(tpl => tpl.replace(/\${customContent}/g, customContent));
+      // 随机选一个模板
+      const randomTemplate = templateList[Math.floor(Math.random() * templateList.length)];
+      
+      resultContent.innerText = randomTemplate;
+      resultBox.style.display = 'block';
+      // 滚动到结果区域
+      resultBox.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 复制内容
+    function copyContent() {
+      const content = document.getElementById('resultContent').innerText;
+      navigator.clipboard.writeText(content).then(() => {
+        alert('复制成功！可直接粘贴使用');
+      }).catch(() => {
+        // 兼容低版本浏览器
+        const textArea = document.createElement('textarea');
+        textArea.value = content;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('复制成功！');
+      });
+    }
+  </script>
+</body>
+</html>
